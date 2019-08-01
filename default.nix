@@ -6,7 +6,13 @@ stdenv.mkDerivation {
     phases = [ "installPhase" "fixupPhase" ];
 
     nativeBuildInputs = [ pkgs.makeWrapper ];
-    buildInputs = [ pkgs.playerctl pkgs.gobject-introspection (pkgs.python3.withPackages (ps: [ ps.pygobject3 ])) ];
+    buildInputs = [
+        pkgs.playerctl
+        pkgs.gobject-introspection
+        pkgs.dbus
+        pkgs.procps
+        (pkgs.python3.withPackages (ps: [ ps.pygobject3 ]))
+    ];
 
     installPhase = ''
         mkdir -p $out/bin
