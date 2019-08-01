@@ -1,0 +1,31 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -i python3 -p playerctl -p gobject-introspection -p "python3.withPackages (ps: [ ps.pygobject3 ])"
+
+import gi
+gi.require_version('Playerctl', '2.0')
+from gi.repository import Playerctl, GLib
+from subprocess import check_output
+from traceback import format_exc
+
+player = Playerctl.Player()
+manager = Playerctl.PlayerManager()
+
+def update_block(*args, **kwargs):
+    try:
+        # Update the i3blocks player block
+        check_output(["pkill", "-RTMIN+11", "i3blocks"])
+    except Exception as e:
+        print(e)
+
+def on_name_appeared(manager, name):
+    if name.name == 'spotify':
+        player = Playerctl.Player.new_from_name(name)
+        player.connect('playback-status::playing', update_block)
+        player.connect("playback-status::paused", update_block)
+        player.connect('metadata', update_block)
+        manager.manage_player(player)
+
+manager.connect('name-appeared', on_name_appeared)
+manager.connect('player-vanished', update_block)
+
+GLib.MainLoop().run()
